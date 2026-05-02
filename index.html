@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Motacam">
+<meta name="theme-color" content="#1F4E79">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Motacam Installation Report</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#111;font-size:15px}
+/* ── SHELL ── */
+.app-shell{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;background:#fff;box-shadow:0 0 20px rgba(0,0,0,.08)}
+.app-bar{background:#1F4E79;color:#fff;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100}
+.app-bar-title{font-size:16px;font-weight:600;letter-spacing:.01em}
+.app-bar-sub{font-size:11px;opacity:.75;margin-top:1px}
+.app-bar-badge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;font-size:11px;padding:3px 10px;white-space:nowrap}
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px)}
+/* ── TABS ── */
+.tab-bar{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0;sticky;top:56px;z-index:99}
+.tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#64748b;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;text-align:center}
+.tab.active{color:#1F4E79;border-bottom-color:#1F4E79}
+/* ── SECTIONS ── */
+.page{display:none;padding:0 0 24px}
+.page.active{display:block}
+.card{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px}
+.card+.card{border-top:none}
+.section-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1F4E79;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-hdr::after{content:'';flex:1;height:1px;background:#e2e8f0}
+/* ── TFL BOX ── */
+.tfl-box{margin:16px;border-radius:12px;border:2px solid #0057A8;background:#EBF4FF;padding:14px 14px 12px;overflow:hidden}
+.tfl-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tfl-pill{background:#0057A8;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em}
+.tfl-heading{font-size:13px;font-weight:600;color:#0C447C}
+.tfl-body{font-size:11.5px;color:#0C447C;line-height:1.65;border-top:1px solid #B5D4F4;padding-top:10px}
+.tfl-body p{margin-bottom:6px}
+.tfl-ref{font-size:10px;color:#185FA5;margin-top:8px;font-style:italic}
+/* ── FORM FIELDS ── */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;font-size:15px;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;background:#fff;color:#111;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#1F4E79;box-shadow:0 0 0 3px rgba(31,78,121,.1)}
+.field input[readonly]{background:#f8fafc;color:#64748b;font-weight:600}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* ── REFS STRIP ── */
+.refs-strip{background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:10px 16px;display:flex;gap:8px}
+.ref-chip{flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;text-align:center}
+.ref-chip-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1F4E79}
+.ref-chip-val{font-size:12px;font-weight:700;color:#111;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── STAR RATING ── */
+.stars{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.star{min-width:44px;height:44px;border-radius:8px;border:1.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;background:#fff;color:#94a3b8;transition:all .15s;padding:0 4px;font-weight:600}
+.star.active{background:#FFFBEB;border-color:#D97706;color:#92400E}
+/* ── CHECKLIST ── */
+.subsec-label{font-size:11px;font-weight:700;color:#1F4E79;text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;background:#EBF4FF;border-radius:6px;margin:10px 0 8px;border-left:3px solid #1F4E79}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.check-item{display:flex;align-items:center;gap:8px;padding:10px 10px;border:1.5px solid #e2e8f0;border-radius:8px;cursor:pointer;transition:all .15s;min-height:44px}
+.check-item.checked{background:#EBF4FF;border-color:#1F4E79}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:#1F4E79;flex-shrink:0;cursor:pointer}
+.check-label{font-size:12px;color:#334155;line-height:1.3}
+.check-item.checked .check-label{color:#1F4E79;font-weight:500}
+/* ── PHOTO SECTION ── */
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.photo-btn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 8px;border:1.5px dashed #cbd5e1;border-radius:10px;background:#f8fafc;cursor:pointer;gap:4px;min-height:80px}
+.photo-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;width:100%;height:100%}
+.photo-btn-icon{font-size:26px;line-height:1}
+.photo-btn-label{font-size:13px;font-weight:600;color:#334155}
+.photo-btn-sub{font-size:10px;color:#64748b}
+.img-count{font-size:12px;color:#64748b;margin-bottom:10px;padding:6px 10px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.img-slot{position:relative;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:#f1f5f9;border:1px solid #e2e8f0}
+.img-slot img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:6px 8px 6px;z-index:3}
+.img-caption{width:100%;background:transparent;border:none;font-size:11px;color:#fff;outline:none}
+.img-caption::placeholder{color:rgba(255,255,255,.6)}
+.img-top-btns{position:absolute;top:4px;right:4px;z-index:4;display:flex;gap:3px}
+.img-btn{background:rgba(0,0,0,.55);border:none;border-radius:4px;color:#fff;font-size:10px;padding:3px 7px;cursor:pointer}
+.del-btn{position:absolute;top:4px;left:4px;z-index:4;background:rgba(200,40,40,.85);border:none;border-radius:4px;color:#fff;font-size:15px;line-height:1;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.annot-canvas{position:absolute;inset:0;z-index:5;cursor:crosshair;display:none}
+.annot-canvas.active{display:block}
+.annot-toolbar{display:none;position:absolute;top:0;left:0;right:0;z-index:6;background:rgba(0,0,0,.8);padding:5px 8px;gap:6px;align-items:center}
+.annot-toolbar.active{display:flex}
+.annot-toolbar button{background:rgba(255,255,255,.2);border:none;border-radius:4px;color:#fff;font-size:11px;padding:3px 8px;cursor:pointer}
+.annot-toolbar input[type=color]{width:24px;height:24px;border:none;border-radius:4px;cursor:pointer;padding:0}
+/* ── SIGNATURE ── */
+.sig-container{border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#f8fafc;margin-bottom:8px}
+canvas.sig-canvas{display:block;width:100%;height:100px;cursor:crosshair;touch-action:none}
+.sig-clear{font-size:13px;color:#64748b;padding:6px 0;cursor:pointer;border:none;background:transparent;display:block;width:100%;text-align:center}
+.sig-note{font-size:11px;color:#64748b;line-height:1.5;margin-top:8px;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}
+/* ── ACTION BUTTONS ── */
+.action-bar{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f8fafc;border-top:1px solid #e2e8f0}
+.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 8px;border-radius:10px;cursor:pointer;border:1.5px solid transparent;font-size:12px;font-weight:600;text-align:center;min-height:64px;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-icon{font-size:20px;line-height:1}
+.btn-save{background:#ECFDF5;border-color:#6EE7B7;color:#065F46}
+.btn-pdf{background:#FEF2F2;border-color:#FCA5A5;color:#991B1B}
+.btn-dl{background:#EFF6FF;border-color:#93C5FD;color:#1D4ED8}
+.btn-db{background:#FFFBEB;border-color:#FCD34D;color:#92400E}
+/* ── DATABASE PANEL ── */
+.db-panel{padding:16px}
+.db-search-box{background:#fff;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px 12px;width:100%;font-size:14px;margin-bottom:10px;outline:none}
+.db-search-box:focus{border-color:#1F4E79}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.filter-input{background:#fff;border:1.5px solid #cbd5e1;border-radius:8px;padding:8px 10px;width:100%;font-size:13px;outline:none;-webkit-appearance:none}
+.filter-input:focus{border-color:#1F4E79}
+.filter-label{font-size:11px;font-weight:600;color:#475569;margin-bottom:4px;display:block}
+.filter-group{display:flex;flex-direction:column}
+.db-results-meta{font-size:12px;color:#64748b;margin-bottom:12px;padding:6px 8px;background:#f8fafc;border-radius:6px}
+.db-list{}
+.db-item{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.db-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.db-item-ref{font-size:14px;font-weight:700;color:#1F4E79}
+.db-item-date{font-size:11px;color:#94a3b8;white-space:nowrap}
+.db-item-details{font-size:12px;color:#475569;line-height:1.5;margin-bottom:8px}
+.db-item-btns{display:flex;gap:6px}
+.db-item-btn{flex:1;padding:7px 4px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:#334155}
+.db-item-btn.load{border-color:#93C5FD;background:#EFF6FF;color:#1D4ED8}
+.db-item-btn.pdf{border-color:#FCA5A5;background:#FEF2F2;color:#991B1B}
+.db-item-btn.del{border-color:#FCA5A5;background:#FEF2F2;color:#991B1B}
+.db-empty{text-align:center;padding:32px 16px;color:#94a3b8;font-size:14px}
+.db-export-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+/* ── INSTALL BANNER ── */
+.install-banner{background:#1F4E79;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.install-banner-text{flex:1;font-size:12px;line-height:1.4}
+.install-banner-text strong{font-size:13px;display:block;margin-bottom:2px}
+.install-btn{background:#fff;color:#1F4E79;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.install-close{background:transparent;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#1F4E79;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;white-space:nowrap;display:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{display:block}
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:480px}
+.modal-title{font-size:17px;font-weight:700;color:#111;margin-bottom:8px}
+.modal-msg{font-size:14px;color:#475569;line-height:1.5;margin-bottom:20px}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-btn{padding:13px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;font-weight:600;cursor:pointer;text-align:center}
+.modal-btn.cancel{background:#f8fafc;color:#334155}
+.modal-btn.confirm{background:#FEF2F2;border-color:#FCA5A5;color:#991B1B}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+<!-- Install banner -->
+<div class="install-banner" id="install-banner" style="display:none">
+  <div class="install-banner-text">
+    <strong>Install Motacam App</strong>
+    Add to your home screen for offline access
+  </div>
+  <button class="install-btn" id="install-btn">Install</button>
+  <button class="install-close" onclick="document.getElementById('install-banner').style.display='none'">×</button>
+</div>
+
+<!-- App bar -->
+<div class="app-bar">
+  <div>
+    <div class="app-bar-title">Motacam Taxi CCTV</div>
+    <div class="app-bar-sub">Installation Report</div>
+  </div>
+  <div class="app-bar-badge" id="report-badge">—</div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab(0)">Report</button>
+  <button class="tab" onclick="switchTab(1)">Photos</button>
+  <button class="tab" onclick="switchTab(2)">Sign-off</button>
+  <button class="tab" onclick="switchTab(3)">Database</button>
+</div>
+
+<div class="scroll-body">
+
+<!-- ══ PAGE 0: REPORT ══ -->
+<div class="page active" id="page-0">
+
+  <!-- TfL Box -->
+  <div class="tfl-box">
+    <div class="tfl-header">
+      <div class="tfl-pill">TfL DVS PSS</div>
+      <div class="tfl-heading">Functionality statement</div>
+    </div>
+    <div class="tfl-body">
+      <p><strong>I confirm that the DVS PSS equipment detailed in this report has been installed, tested, and verified as fully operational in accordance with Transport for London's DVS PSS requirements.</strong></p>
+      <p><strong>MOIS</strong> — Detects vulnerable road users in the vehicle's path when moving off; provides an audible and/or visual warning to the driver.</p>
+      <p><strong>BSIS</strong> — Detects vulnerable road users in the nearside blind spot during left turns and low-speed manoeuvres; provides an audible and/or visual warning to the driver.</p>
+      <p>The equipment has been installed by a Motacam-certified technician and is confirmed to be functioning correctly at the time and date stated on this report. This report serves as the installation certificate for DVS PSS compliance purposes.</p>
+    </div>
+    <div class="tfl-ref">TfL DVS PSS requirements apply to HGVs operating in Greater London under the HGV Safety Permit Scheme · tfl.gov.uk/dvs</div>
+  </div>
+
+  <!-- Refs strip -->
+  <div class="refs-strip">
+    <div class="ref-chip"><div class="ref-chip-label">Report</div><div class="ref-chip-val" id="ref-report">—</div></div>
+    <div class="ref-chip"><div class="ref-chip-label">Job ref</div><div class="ref-chip-val" id="ref-job">—</div></div>
+    <div class="ref-chip"><div class="ref-chip-label">Certificate</div><div class="ref-chip-val" id="ref-cert">—</div></div>
+  </div>
+
+  <!-- Technician -->
+  <div class="card">
+    <div class="section-hdr">Technician</div>
+    <div class="two-col">
+      <div class="field"><label>Name</label><input type="text" id="tech-name" placeholder="Full name" autocomplete="name"></div>
+      <div class="field"><label>Code</label><input type="text" id="tech-code" placeholder="e.g. MC-04"></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Date</label><input type="date" id="inst-date"></div>
+      <div class="field"><label>Time</label><input type="time" id="inst-time"></div>
+    </div>
+  </div>
+
+  <!-- Customer -->
+  <div class="card">
+    <div class="section-hdr">Customer</div>
+    <div class="field"><label>Company / customer name</label><input type="text" id="cust-name" placeholder="Full legal name" autocomplete="organization"></div>
+    <div class="two-col">
+      <div class="field"><label>Contact name</label><input type="text" id="contact-name" placeholder="Name"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="contact-tel" placeholder="07..."></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="contact-email" placeholder="email@example.com"></div>
+    <div class="field"><label>Address line 1</label><input type="text" id="addr1" placeholder="Building / street" autocomplete="address-line1"></div>
+    <div class="field"><label>Address line 2</label><input type="text" id="addr2" placeholder="Area / district (optional)" autocomplete="address-line2"></div>
+    <div class="two-col">
+      <div class="field"><label>Town / city</label><input type="text" id="addr-town" placeholder="Town" autocomplete="address-level2"></div>
+      <div class="field"><label>Postcode</label><input type="text" id="addr-pc" placeholder="SS17 8DT" style="text-transform:uppercase" autocomplete="postal-code"></div>
+    </div>
+  </div>
+
+  <!-- Vehicle -->
+  <div class="card">
+    <div class="section-hdr">Vehicle</div>
+    <div class="two-col">
+      <div class="field"><label>Registration</label><input type="text" id="vreg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
+      <div class="field"><label>Make</label><input type="text" id="vmake" placeholder="e.g. Toyota"></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Model</label><input type="text" id="vmodel" placeholder="e.g. Prius"></div>
+      <div class="field"><label>Year</label><input type="number" id="vyear" placeholder="2021" min="2000" max="2035"></div>
+    </div>
+    <div class="field">
+      <label>Current TfL DVS star rating</label>
+      <div class="stars" id="stars">
+        <div class="star" data-v="1">★ 1</div>
+        <div class="star" data-v="2">★ 2</div>
+        <div class="star" data-v="3">★ 3</div>
+        <div class="star" data-v="4">★ 4</div>
+        <div class="star" data-v="5">★ 5</div>
+        <div class="star" data-v="0" style="font-size:11px;padding:0 8px">N/A</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Equipment -->
+  <div class="card">
+    <div class="section-hdr">Equipment installed</div>
+
+    <div class="subsec-label">General</div>
+    <div class="check-grid">
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Live 360° CCTV system</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">MDVR recording unit</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Live GPS tracking</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Telematics module</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">CAN bus reader</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Remote tachograph connection</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">SIM card / connectivity</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Wiring harness</span></div>
+    </div>
+
+    <div class="subsec-label">DVS PSS AI camera kit</div>
+    <div class="check-grid">
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">MOIS camera</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">BSIS camera</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Driver warning LED</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">External left turn alarm</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Alarm mute button</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">External warning signage</span></div>
+    </div>
+
+    <div class="subsec-label">DVS PSS AI radar kit</div>
+    <div class="check-grid">
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Front MOIS radar detection</span></div>
+      <div class="check-item" onclick="tog(this)"><input type="checkbox"><span class="check-label">Side BSIS radar detection</span></div>
+    </div>
+
+    <div class="field" style="margin-top:12px"><label>Other equipment</label><input type="text" id="equip-other" placeholder="Describe any additional items"></div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="section-hdr">Notes</div>
+    <div class="field"><label>Installation notes / observations</label><textarea id="notes" placeholder="Any notes about the installation, vehicle condition, or follow-up required..."></textarea></div>
+  </div>
+
+</div><!-- end page-0 -->
+
+<!-- ══ PAGE 1: PHOTOS ══ -->
+<div class="page" id="page-1">
+  <div class="card">
+    <div class="section-hdr">Installation photos</div>
+    <div class="photo-btns">
+      <div class="photo-btn">
+        <div class="photo-btn-icon">📷</div>
+        <div class="photo-btn-label">Take photo</div>
+        <div class="photo-btn-sub">Use camera</div>
+        <input type="file" accept="image/*" capture="environment" id="cam-input">
+      </div>
+      <div class="photo-btn">
+        <div class="photo-btn-icon">🖼</div>
+        <div class="photo-btn-label">From gallery</div>
+        <div class="photo-btn-sub">Choose image</div>
+        <input type="file" accept="image/*" id="gallery-input" multiple>
+      </div>
+    </div>
+    <div class="img-count" id="img-count">0 of 8 photos added</div>
+    <div class="img-grid" id="img-grid"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE 2: SIGN-OFF ══ -->
+<div class="page" id="page-2">
+  <div class="card">
+    <div class="section-hdr">Technician sign-off</div>
+    <div class="field"><label>Technician signature</label>
+      <div class="sig-container"><canvas class="sig-canvas" id="sig-tech" width="700" height="200"></canvas></div>
+      <button class="sig-clear" onclick="clearSig('sig-tech')">Clear signature</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-hdr">Customer sign-off</div>
+    <div class="two-col" style="margin-bottom:14px">
+      <div class="field"><label>Customer name (print)</label><input type="text" id="cust-sig-name" placeholder="Print full name"></div>
+      <div class="field"><label>Date signed</label><input type="date" id="cust-sig-date"></div>
+    </div>
+    <div class="field"><label>Customer signature</label>
+      <div class="sig-container"><canvas class="sig-canvas" id="sig-cust" width="700" height="200"></canvas></div>
+      <button class="sig-clear" onclick="clearSig('sig-cust')">Clear signature</button>
+    </div>
+    <div class="sig-note">By signing above the customer confirms that the equipment listed in this report has been installed to their satisfaction and that the DVS PSS functionality statement has been explained to them.</div>
+  </div>
+
+  <!-- Action buttons here too for convenience -->
+  <div class="action-bar">
+    <div class="btn btn-save" onclick="saveAndNext()"><div class="btn-icon">💾</div>Save &amp; new report</div>
+    <div class="btn btn-pdf" onclick="savePDF()"><div class="btn-icon">📄</div>Save as PDF</div>
+    <div class="btn btn-dl" onclick="saveJSON()"><div class="btn-icon">⬇</div>Download file</div>
+    <div class="btn btn-db" onclick="switchTab(3)"><div class="btn-icon">🗂</div>View database</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 3: DATABASE ══ -->
+<div class="page" id="page-3">
+  <div class="db-panel">
+    <div class="section-hdr" style="margin-bottom:12px">Report database</div>
+    <input type="text" class="db-search-box" id="db-search" placeholder="Search all reports..." oninput="renderDB()">
+
+    <div class="filter-grid">
+      <div class="filter-group"><label class="filter-label">Customer</label><input type="text" class="filter-input" id="f-customer" placeholder="Customer name..." oninput="renderDB()"></div>
+      <div class="filter-group"><label class="filter-label">Vehicle reg</label><input type="text" class="filter-input" id="f-vreg" placeholder="Registration..." oninput="renderDB()"></div>
+      <div class="filter-group"><label class="filter-label">Technician</label><input type="text" class="filter-input" id="f-tech" placeholder="Technician name..." oninput="renderDB()"></div>
+      <div class="filter-group"><label class="filter-label">Sort by</label>
+        <select class="filter-input" id="f-sort" onchange="renderDB()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="customer">Customer A–Z</option>
+          <option value="vreg">Vehicle reg A–Z</option>
+        </select>
+      </div>
+      <div class="filter-group"><label class="filter-label">Date from</label><input type="date" class="filter-input" id="f-date-from" oninput="renderDB()"></div>
+      <div class="filter-group"><label class="filter-label">Date to</label><input type="date" class="filter-input" id="f-date-to" oninput="renderDB()"></div>
+    </div>
+
+    <div class="db-results-meta" id="db-results-meta"></div>
+    <div class="db-list" id="db-list"></div>
+
+    <div class="db-export-row">
+      <div class="btn btn-dl" style="min-height:48px;padding:10px" onclick="exportAllJSON()"><div class="btn-icon">💾</div>Export all</div>
+      <div class="btn" style="min-height:48px;padding:10px;border:1.5px solid #e2e8f0" onclick="clearFilters()"><div class="btn-icon">✕</div>Clear filters</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- scroll-body -->
+
+<!-- Action bar (pages 0 and 1) -->
+<div class="action-bar" id="main-action-bar">
+  <div class="btn btn-save" onclick="saveAndNext()"><div class="btn-icon">💾</div>Save &amp; new report</div>
+  <div class="btn btn-pdf" onclick="savePDF()"><div class="btn-icon">📄</div>Save as PDF</div>
+  <div class="btn btn-dl" onclick="saveJSON()"><div class="btn-icon">⬇</div>Download file</div>
+  <div class="btn btn-db" onclick="switchTab(3)"><div class="btn-icon">🗂</div>Database</div>
+</div>
+
+</div><!-- app-shell -->
+
+<!-- Modal confirm -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" id="modal-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let slots=[], dvsStar=null, modalCb=null;
+let annotDrawing=false, annotColor='#FF3B30', activeAnnotCtx=null;
+const YEAR=new Date().getFullYear();
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── PWA INSTALL ──
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('install-banner').style.display='flex';
+});
+document.getElementById('install-btn').onclick=async()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome}=await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById('install-banner').style.display='none';
+  if(outcome==='accepted') showToast('App installed successfully!');
+};
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-banner').style.display='none';
+  showToast('Motacam app installed');
+});
+
+// ── TABS ──
+let currentTab=0;
+function switchTab(i){
+  currentTab=i;
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',i===j));
+  document.getElementById('main-action-bar').style.display=(i===2||i===3)?'none':'grid';
+  if(i===3) renderDB();
+}
+
+// ── DB ──
+function getCounter(){try{return parseInt(localStorage.getItem('mc_ctr')||'1');}catch(e){return 1;}}
+function setCounter(n){try{localStorage.setItem('mc_ctr',String(n));}catch(e){}}
+function getDB(){try{return JSON.parse(localStorage.getItem('mc_db')||'[]');}catch(e){return[];}}
+function setDB(db){try{localStorage.setItem('mc_db',JSON.stringify(db));}catch(e){}}
+function pad(n,l=4){return String(n).padStart(l,'0');}
+function genRefs(n){return{reportNum:`MC-${YEAR}-${pad(n)}`,jobRef:`JOB-${YEAR}-${pad(n)}`,certNum:`CERT-${YEAR}-${pad(n)}`};}
+
+function loadRefs(){
+  const r=genRefs(getCounter());
+  document.getElementById('ref-report').textContent=r.reportNum;
+  document.getElementById('ref-job').textContent=r.jobRef;
+  document.getElementById('ref-cert').textContent=r.certNum;
+  document.getElementById('report-badge').textContent=r.reportNum;
+}
+
+// ── UTILS ──
+function tog(el){el.classList.toggle('checked');el.querySelector('input').checked=el.classList.contains('checked');}
+function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function showModal(title,msg,cb){document.getElementById('modal-title').textContent=title;document.getElementById('modal-msg').textContent=msg;modalCb=cb;document.getElementById('modal-overlay').classList.add('show');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');modalCb=null;}
+document.getElementById('modal-ok').onclick=function(){closeModal();if(modalCb)modalCb();};
+document.getElementById('modal-overlay').onclick=function(e){if(e.target===this)closeModal();};
+
+// ── STARS ──
+document.querySelectorAll('#stars .star').forEach(s=>{
+  s.onclick=function(){document.querySelectorAll('#stars .star').forEach(x=>x.classList.remove('active'));this.classList.add('active');dvsStar=this.dataset.v;};
+});
+
+// ── DATE/TIME ──
+const now=new Date();
+document.getElementById('inst-date').value=now.toISOString().split('T')[0];
+document.getElementById('inst-time').value=now.toTimeString().slice(0,5);
+document.getElementById('cust-sig-date').value=now.toISOString().split('T')[0];
+loadRefs();
+
+// ── PHOTOS ──
+const MAX_IMGS=8;
+document.getElementById('cam-input').onchange=function(e){addFiles(e.target.files);this.value='';};
+document.getElementById('gallery-input').onchange=function(e){addFiles(e.target.files);this.value='';};
+
+function addFiles(files){
+  const rem=MAX_IMGS-slots.length;
+  if(rem<=0){showToast('Maximum 8 photos reached');return;}
+  const toAdd=Array.from(files).slice(0,rem);
+  let loaded=0;
+  toAdd.forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{slots.push({src:ev.target.result,caption:'',annot:null});loaded++;if(loaded===toAdd.length)buildSlots();};
+    r.readAsDataURL(f);
+  });
+  if(files.length>rem)showToast(`Only ${rem} photo${rem!==1?'s':''} added — limit reached`);
+}
+
+function buildSlots(){
+  const grid=document.getElementById('img-grid');grid.innerHTML='';
+  document.getElementById('img-count').textContent=`${slots.length} of 8 photo${slots.length!==1?'s':''} added`;
+  slots.forEach((sl,i)=>{
+    const div=document.createElement('div');div.className='img-slot';div.dataset.idx=i;
+    const img=document.createElement('img');img.src=sl.src;div.appendChild(img);
+    const ac=document.createElement('canvas');ac.className='annot-canvas';ac.dataset.idx=i;div.appendChild(ac);
+    const toolbar=document.createElement('div');toolbar.className='annot-toolbar';
+    toolbar.innerHTML=`<span style="font-size:10px;color:#fff">Draw</span><input type="color" value="${annotColor}" onchange="annotColor=this.value" onclick="event.stopPropagation()"><button onclick="clearAnnot(${i})">Clear</button><button onclick="doneAnnot(${i})">Done</button>`;
+    div.appendChild(toolbar);
+    const topBtns=document.createElement('div');topBtns.className='img-top-btns';
+    const ab=document.createElement('button');ab.className='img-btn';ab.textContent='Annotate';ab.onclick=e=>{e.stopPropagation();startAnnot(i,div);};
+    topBtns.appendChild(ab);div.appendChild(topBtns);
+    const db=document.createElement('button');db.className='del-btn';db.textContent='×';db.onclick=e=>{e.stopPropagation();slots.splice(i,1);buildSlots();};div.appendChild(db);
+    const ov=document.createElement('div');ov.className='img-overlay';
+    const cap=document.createElement('input');cap.className='img-caption';cap.placeholder='Caption...';cap.value=sl.caption||'';cap.onclick=e=>e.stopPropagation();cap.oninput=function(){slots[i].caption=this.value;};ov.appendChild(cap);div.appendChild(ov);
+    grid.appendChild(div);
+    requestAnimationFrame(()=>{
+      ac.width=ac.offsetWidth*devicePixelRatio||300;ac.height=ac.offsetHeight*devicePixelRatio||225;
+      ac.style.width=ac.offsetWidth+'px';ac.style.height=ac.offsetHeight+'px';
+      const ctx=ac.getContext('2d');ctx.scale(devicePixelRatio,devicePixelRatio);
+      if(sl.annot){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,ac.offsetWidth,ac.offsetHeight);im.src=sl.annot;}
+    });
+  });
+}
+buildSlots();
+
+function startAnnot(idx,div){
+  const ac=div.querySelector('.annot-canvas');const toolbar=div.querySelector('.annot-toolbar');
+  ac.classList.add('active');toolbar.classList.add('active');
+  activeAnnotCtx=ac.getContext('2d');
+  const onStart=e=>{annotDrawing=true;const p=getPos(e,ac);activeAnnotCtx.beginPath();activeAnnotCtx.moveTo(p.x,p.y);};
+  const onMove=e=>{if(!annotDrawing)return;const p=getPos(e,ac);activeAnnotCtx.lineTo(p.x,p.y);activeAnnotCtx.strokeStyle=annotColor;activeAnnotCtx.lineWidth=3;activeAnnotCtx.lineCap='round';activeAnnotCtx.stroke();};
+  const onEnd=()=>annotDrawing=false;
+  ac.addEventListener('mousedown',onStart);ac.addEventListener('mousemove',onMove);ac.addEventListener('mouseup',onEnd);
+  ac.addEventListener('touchstart',e=>{e.preventDefault();onStart(e);},{passive:false});
+  ac.addEventListener('touchmove',e=>{e.preventDefault();onMove(e);},{passive:false});
+  ac.addEventListener('touchend',onEnd);
+  div.querySelector('.annot-toolbar button:last-child').onclick=()=>{
+    slots[idx].annot=ac.toDataURL();ac.classList.remove('active');toolbar.classList.remove('active');
+  };
+}
+function getPos(e,canvas){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+function clearAnnot(idx){const ac=document.querySelector(`.annot-canvas[data-idx="${idx}"]`);if(ac){const ctx=ac.getContext('2d');ctx.clearRect(0,0,ac.width,ac.height);}slots[idx].annot=null;}
+function doneAnnot(idx){
+  const div=document.querySelector(`[data-idx="${idx}"]`).closest('.img-slot');
+  const ac=div.querySelector('.annot-canvas');slots[idx].annot=ac.toDataURL();
+  ac.classList.remove('active');div.querySelector('.annot-toolbar').classList.remove('active');
+}
+
+// ── SIGNATURES ──
+function initSig(id){
+  const canvas=document.getElementById(id);let drawing=false;
+  const ctx=canvas.getContext('2d');ctx.strokeStyle='#1F4E79';ctx.lineWidth=2.5;ctx.lineCap='round';
+  function getP(e){const r=canvas.getBoundingClientRect();const sx=canvas.width/r.width,sy=canvas.height/r.height;const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*sx,y:(t.clientY-r.top)*sy};}
+  canvas.addEventListener('mousedown',e=>{drawing=true;const p=getP(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=getP(e);ctx.lineTo(p.x,p.y);ctx.stroke();});
+  canvas.addEventListener('mouseup',()=>drawing=false);canvas.addEventListener('mouseleave',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=getP(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=getP(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
+}
+initSig('sig-tech');initSig('sig-cust');
+function clearSig(id){const c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height);}
+
+// ── COLLECT ──
+function collectData(){
+  const checked=[];document.querySelectorAll('.check-item.checked .check-label').forEach(l=>checked.push(l.textContent));
+  const refs=genRefs(getCounter());
+  return{
+    reportNum:refs.reportNum,jobRef:refs.jobRef,certNum:refs.certNum,
+    techName:v('tech-name'),techCode:v('tech-code'),instDate:v('inst-date'),instTime:v('inst-time'),
+    custName:v('cust-name'),contactName:v('contact-name'),contactTel:v('contact-tel'),contactEmail:v('contact-email'),
+    addr1:v('addr1'),addr2:v('addr2'),addrTown:v('addr-town'),addrPc:v('addr-pc'),
+    vreg:v('vreg'),vmake:v('vmake'),vmodel:v('vmodel'),vyear:v('vyear'),
+    dvsStar,equipmentInstalled:checked,equipOther:v('equip-other'),notes:v('notes'),
+    photos:slots.map(s=>({caption:s.caption,src:s.src,annot:s.annot})),
+    signature:document.getElementById('sig-tech').toDataURL(),
+    custSigName:v('cust-sig-name'),custSigDate:v('cust-sig-date'),
+    custSignature:document.getElementById('sig-cust').toDataURL(),
+    savedAt:new Date().toISOString()
+  };
+}
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+
+// ── CLEAR FORM ──
+function clearForm(){
+  const tn=v('tech-name'),tc=v('tech-code');
+  ['cust-name','contact-name','contact-tel','contact-email','addr1','addr2','addr-town','addr-pc',
+   'vreg','vmake','vmodel','vyear','equip-other','notes','cust-sig-name'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.querySelectorAll('.check-item.checked').forEach(el=>{el.classList.remove('checked');el.querySelector('input').checked=false;});
+  document.querySelectorAll('#stars .star').forEach(x=>x.classList.remove('active'));
+  dvsStar=null;slots=[];buildSlots();clearSig('sig-tech');clearSig('sig-cust');
+  const n=new Date();
+  document.getElementById('inst-date').value=n.toISOString().split('T')[0];
+  document.getElementById('inst-time').value=n.toTimeString().slice(0,5);
+  document.getElementById('cust-sig-date').value=n.toISOString().split('T')[0];
+  document.getElementById('tech-name').value=tn;document.getElementById('tech-code').value=tc;
+}
+
+// ── SAVE & NEXT ──
+function saveAndNext(){
+  showModal('Save and start new report','This will save the current report to the database and clear the form for the next job. Continue?',()=>{
+    const data=collectData();const db=getDB();db.unshift(data);setDB(db);
+    const n=getCounter();setCounter(n+1);clearForm();loadRefs();
+    switchTab(0);showToast('Report '+data.reportNum+' saved');
+  });
+}
+
+// ── DOWNLOAD JSON ──
+function saveJSON(){
+  try{
+    const data=collectData();
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`Motacam_${data.reportNum}_${(data.vreg||'UNKNOWN').replace(/\s/g,'')}.json`;a.click();URL.revokeObjectURL(url);
+    showToast('Downloaded');
+  }catch(e){showToast('Download failed');}
+}
+
+function exportAllJSON(){
+  try{
+    const db=getDB();if(!db.length){showToast('No reports saved');return;}
+    const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`Motacam_All_Reports_${new Date().toISOString().split('T')[0]}.json`;a.click();URL.revokeObjectURL(url);
+    showToast(`Exported ${db.length} reports`);
+  }catch(e){showToast('Export failed');}
+}
+
+// ── DATABASE ──
+function renderDB(){
+  const db=getDB();
+  const search=(v('db-search')||'').toLowerCase();
+  const fC=(v('f-customer')||'').toLowerCase();
+  const fV=(v('f-vreg')||'').toLowerCase();
+  const fT=(v('f-tech')||'').toLowerCase();
+  const fFrom=v('f-date-from'),fTo=v('f-date-to');
+  const sort=document.getElementById('f-sort').value;
+  let filtered=db.filter(r=>{
+    const hay=`${r.reportNum} ${r.jobRef} ${r.certNum} ${r.custName} ${r.vreg} ${r.vmake} ${r.vmodel} ${r.techName} ${r.instDate}`.toLowerCase();
+    if(search&&!hay.includes(search))return false;
+    if(fC&&!(r.custName||'').toLowerCase().includes(fC))return false;
+    if(fV&&!(r.vreg||'').toLowerCase().replace(/\s/g,'').includes(fV.replace(/\s/g,'')))return false;
+    if(fT&&!(r.techName||'').toLowerCase().includes(fT))return false;
+    if(fFrom&&r.instDate&&r.instDate<fFrom)return false;
+    if(fTo&&r.instDate&&r.instDate>fTo)return false;
+    return true;
+  });
+  filtered.sort((a,b)=>{
+    if(sort==='oldest')return(a.savedAt||'').localeCompare(b.savedAt||'');
+    if(sort==='customer')return(a.custName||'').localeCompare(b.custName||'');
+    if(sort==='vreg')return(a.vreg||'').localeCompare(b.vreg||'');
+    return(b.savedAt||'').localeCompare(a.savedAt||'');
+  });
+  const hasFilters=search||fC||fV||fT||fFrom||fTo;
+  document.getElementById('db-results-meta').textContent=
+    `${db.length} report${db.length!==1?'s':''} total${hasFilters?` · ${filtered.length} matching`:''}`;
+  const list=document.getElementById('db-list');list.innerHTML='';
+  if(!filtered.length){list.innerHTML=`<div class="db-empty">${db.length?'No reports match the current filters':'No reports saved yet — complete and save a report to see it here'}</div>`;return;}
+  filtered.forEach(r=>{
+    const origIdx=db.indexOf(r);
+    const saved=r.savedAt?new Date(r.savedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    const starStr=r.dvsStar&&r.dvsStar!=='0'?'★'.repeat(Number(r.dvsStar)):r.dvsStar==='0'?'N/A':'';
+    const item=document.createElement('div');item.className='db-item';
+    item.innerHTML=`
+      <div class="db-item-top">
+        <div class="db-item-ref">${r.reportNum||'—'} &nbsp;·&nbsp; ${r.vreg||'No reg'}${starStr?' &nbsp;'+starStr:''}</div>
+        <div class="db-item-date">${saved}</div>
+      </div>
+      <div class="db-item-details">
+        ${r.custName||'No customer'}<br>
+        ${[r.vmake,r.vmodel,r.vyear].filter(Boolean).join(' ')||'—'} &nbsp;·&nbsp; ${r.techName||'—'} ${r.techCode?'('+r.techCode+')':''}<br>
+        ${r.instDate||'—'} ${r.instTime||''}
+      </div>
+      <div class="db-item-btns">
+        <div class="db-item-btn load" onclick="loadReport(${origIdx})">Load</div>
+        <div class="db-item-btn pdf" onclick="pdfReport(${origIdx})">PDF</div>
+        <div class="db-item-btn del" onclick="delReport(${origIdx})">Delete</div>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+function clearFilters(){
+  ['db-search','f-customer','f-vreg','f-tech','f-date-from','f-date-to'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-sort').value='newest';renderDB();
+}
+
+function loadReport(i){
+  const db=getDB();const r=db[i];if(!r)return;
+  showModal('Load report','Loading this report will replace the current form. Continue?',()=>{
+    const fields={
+      'tech-name':r.techName,'tech-code':r.techCode,'inst-date':r.instDate,'inst-time':r.instTime,
+      'cust-name':r.custName,'contact-name':r.contactName,'contact-tel':r.contactTel,'contact-email':r.contactEmail,
+      'addr1':r.addr1,'addr2':r.addr2,'addr-town':r.addrTown,'addr-pc':r.addrPc,
+      'vreg':r.vreg,'vmake':r.vmake,'vmodel':r.vmodel,'vyear':r.vyear,
+      'equip-other':r.equipOther,'notes':r.notes,'cust-sig-name':r.custSigName,'cust-sig-date':r.custSigDate
+    };
+    Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});
+    document.querySelectorAll('.check-item').forEach(el=>{
+      const lbl=el.querySelector('.check-label').textContent;
+      const on=(r.equipmentInstalled||[]).includes(lbl);
+      el.classList.toggle('checked',on);el.querySelector('input').checked=on;
+    });
+    document.querySelectorAll('#stars .star').forEach(s=>s.classList.toggle('active',s.dataset.v===r.dvsStar));
+    dvsStar=r.dvsStar||null;
+    document.getElementById('ref-report').textContent=r.reportNum||'—';
+    document.getElementById('ref-job').textContent=r.jobRef||'—';
+    document.getElementById('ref-cert').textContent=r.certNum||'—';
+    document.getElementById('report-badge').textContent=r.reportNum||'—';
+    slots=(r.photos||[]).map(p=>({src:p.src,caption:p.caption||'',annot:p.annot||null}));
+    buildSlots();clearSig('sig-tech');clearSig('sig-cust');
+    if(r.signature){const im=new Image();im.onload=()=>document.getElementById('sig-tech').getContext('2d').drawImage(im,0,0,700,200);im.src=r.signature;}
+    if(r.custSignature){const im=new Image();im.onload=()=>document.getElementById('sig-cust').getContext('2d').drawImage(im,0,0,700,200);im.src=r.custSignature;}
+    switchTab(0);showToast('Report '+r.reportNum+' loaded');
+  });
+}
+
+function delReport(i){
+  const db=getDB();const r=db[i];
+  showModal('Delete report','Delete report '+r.reportNum+'? This cannot be undone.',()=>{
+    db.splice(i,1);setDB(db);renderDB();showToast('Report deleted');
+  });
+}
+function pdfReport(i){const db=getDB();const r=db[i];if(r)generatePDF(r);}
+function savePDF(){generatePDF(collectData());}
+
+function generatePDF(data){
+  const vreg=(data.vreg||'UNKNOWN').replace(/\s/g,'');
+  const starStr=data.dvsStar==='0'?'N/A':data.dvsStar?'★'.repeat(Number(data.dvsStar))+'☆'.repeat(5-Number(data.dvsStar)):'—';
+  const photoRows=(data.photos||[]).map((p,i)=>`<div class="pc"><div class="pw"><img src="${p.src}">${p.annot?`<img class="ao" src="${p.annot}">`:''}
+  </div><div class="pcap">${p.caption||`Photo ${i+1}`}</div></div>`).join('');
+  const equipList=(data.equipmentInstalled||[]).map(e=>`<li>${e}</li>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Motacam ${data.reportNum||''}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:16px}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1F4E79;padding-bottom:10px;margin-bottom:12px}
+.cn{font-size:16px;font-weight:700;color:#1F4E79}.cs{font-size:9px;color:#555;margin-top:2px}
+.rt{text-align:right}.rt b{font-size:13px;color:#185FA5}.rt div{font-size:9px;color:#777;margin-top:2px}
+.tfl{border:2px solid #0057A8;border-radius:6px;background:#EBF4FF;padding:12px 14px;margin-bottom:12px}
+.tfl-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tfl-b{background:#0057A8;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px}
+.tfl-t{font-size:12px;font-weight:700;color:#0C447C}
+.tfl-body{font-size:9.5px;color:#0C447C;line-height:1.65;border-top:1px solid #B5D4F4;padding-top:8px}
+.tfl-body p{margin-bottom:5px}.tfl-ref{font-size:8px;color:#185FA5;margin-top:5px;font-style:italic}
+.rr{display:flex;gap:10px;margin-bottom:12px}
+.rc{border:0.5px solid #ccc;border-radius:5px;padding:7px 10px;flex:1;text-align:center}
+.rl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1F4E79;margin-bottom:2px}
+.rv{font-size:12px;font-weight:700;color:#111}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sec{border:0.5px solid #ccc;border-radius:5px;padding:9px}
+.sf{border:0.5px solid #ccc;border-radius:5px;padding:9px;margin-bottom:10px}
+h3{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1F4E79;border-bottom:0.5px solid #e2e8f0;padding-bottom:4px;margin-bottom:6px}
+.row{display:flex;gap:6px;margin-bottom:3px}.lbl{font-size:9px;color:#666;min-width:80px;flex-shrink:0}.val{font-size:10px;font-weight:500}
+.ec{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+.ec li{font-size:10px;list-style:none;padding:2px 0 2px 14px;position:relative}
+.ec li::before{content:"✓";position:absolute;left:0;color:#1F4E79}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.pc{break-inside:avoid}.pw{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:4px;border:0.5px solid #ccc}
+.pw img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.ao{pointer-events:none}
+.pcap{font-size:8px;color:#555;margin-top:3px;text-align:center}
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.sig-box{border:0.5px solid #ccc;border-radius:5px;padding:8px}
+.sig-img{max-height:55px;max-width:100%;display:block}
+.sig-name{font-size:9px;color:#444;margin-top:4px}
+.sig-note{font-size:8px;color:#666;line-height:1.5;margin-top:6px;padding-top:5px;border-top:0.5px solid #e2e8f0}
+.footer{border-top:0.5px solid #ccc;padding-top:7px;font-size:8px;color:#888;display:flex;justify-content:space-between;margin-top:10px}
+@media print{body{padding:8px}@page{margin:8mm;size:A4}}</style></head><body>
+<div class="hdr"><div>
+<div class="cn">Motacam Taxi CCTV Limited</div>
+<div class="cs">72 Rodings Avenue, Stanford Le Hope, Essex SS17 8DT</div>
+<div class="cs">Tel: 07450 337535 · info@motacam.co.uk · www.motacam.co.uk · Co. No. 12393343</div>
+</div><div class="rt"><b>Equipment Installation Report</b><div>Generated: ${new Date().toLocaleString('en-GB')}</div></div></div>
+<div class="tfl"><div class="tfl-h"><div class="tfl-b">TfL DVS PSS</div><div class="tfl-t">Functionality statement</div></div>
+<div class="tfl-body">
+<p><strong>I confirm that the DVS PSS equipment detailed in this report has been installed, tested, and verified as fully operational in accordance with Transport for London's DVS PSS requirements.</strong></p>
+<p><strong>MOIS</strong> — Detects vulnerable road users in the vehicle's path when moving off; provides audible/visual warning to the driver.</p>
+<p><strong>BSIS</strong> — Detects vulnerable road users in the nearside blind spot during left turns and low-speed manoeuvres; provides audible/visual warning to the driver.</p>
+<p>Installed by a Motacam-certified technician. This report serves as the installation certificate for DVS PSS compliance.</p>
+</div><div class="tfl-ref">TfL DVS PSS applies to HGVs in Greater London under the HGV Safety Permit Scheme · tfl.gov.uk/dvs</div></div>
+<div class="rr">
+<div class="rc"><div class="rl">Report</div><div class="rv">${data.reportNum||'—'}</div></div>
+<div class="rc"><div class="rl">Job ref</div><div class="rv">${data.jobRef||'—'}</div></div>
+<div class="rc"><div class="rl">Certificate</div><div class="rv">${data.certNum||'—'}</div></div>
+<div class="rc"><div class="rl">Date / time</div><div class="rv" style="font-size:10px">${data.instDate||'—'} ${data.instTime||''}</div></div>
+</div>
+<div class="g2">
+<div class="sec"><h3>Technician</h3>
+<div class="row"><span class="lbl">Name</span><span class="val">${data.techName||'—'}</span></div>
+<div class="row"><span class="lbl">Code</span><span class="val">${data.techCode||'—'}</span></div></div>
+<div class="sec"><h3>Vehicle</h3>
+<div class="row"><span class="lbl">Registration</span><span class="val">${data.vreg||'—'}</span></div>
+<div class="row"><span class="lbl">Make / model</span><span class="val">${[data.vmake,data.vmodel].filter(Boolean).join(' ')||'—'}</span></div>
+<div class="row"><span class="lbl">Year</span><span class="val">${data.vyear||'—'}</span></div>
+<div class="row"><span class="lbl">DVS rating</span><span class="val">${starStr}</span></div></div>
+<div class="sec"><h3>Customer</h3>
+<div class="row"><span class="lbl">Company</span><span class="val">${data.custName||'—'}</span></div>
+<div class="row"><span class="lbl">Contact</span><span class="val">${data.contactName||'—'}</span></div>
+<div class="row"><span class="lbl">Tel</span><span class="val">${data.contactTel||'—'}</span></div>
+<div class="row"><span class="lbl">Email</span><span class="val">${data.contactEmail||'—'}</span></div></div>
+<div class="sec"><h3>Address</h3>
+<div class="val" style="font-size:10px;line-height:1.7">${[data.addr1,data.addr2,data.addrTown,data.addrPc].filter(Boolean).join('<br>')||'—'}</div></div>
+</div>
+<div class="sf"><h3>Equipment installed</h3>
+<ul class="ec">${equipList||'<li style="color:#999">None selected</li>'}</ul>
+${data.equipOther?`<div class="row" style="margin-top:5px"><span class="lbl">Other</span><span class="val">${data.equipOther}</span></div>`:''}</div>
+${(data.photos||[]).length?`<div class="sf"><h3>Installation photos (${data.photos.length})</h3><div class="pg">${photoRows}</div></div>`:''}
+${data.notes?`<div class="sf"><h3>Notes</h3><p style="font-size:10px;line-height:1.6">${data.notes}</p></div>`:''}
+<div class="sig-row">
+<div class="sig-box"><h3>Technician — ${data.techName||''}${data.techCode?' ('+data.techCode+')':''}</h3>
+<img class="sig-img" src="${data.signature}" alt="Technician signature"></div>
+<div class="sig-box"><h3>Customer sign-off</h3>
+<img class="sig-img" src="${data.custSignature}" alt="Customer signature">
+${data.custSigName?`<div class="sig-name">Name: ${data.custSigName}</div>`:''}
+${data.custSigDate?`<div class="sig-name">Date: ${data.custSigDate}</div>`:''}
+<div class="sig-note">By signing, the customer confirms the equipment has been installed to their satisfaction and the DVS PSS functionality statement has been explained to them.</div>
+</div></div>
+<div class="footer">
+<span>Motacam Taxi CCTV Ltd · Co. No. 12393343 · ${data.reportNum||''} · Job: ${data.jobRef||''} · Cert: ${data.certNum||''}</span>
+<span>Generated ${new Date().toLocaleString('en-GB')}</span></div>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(w){w.onload=()=>{setTimeout(()=>{w.print();URL.revokeObjectURL(url);},500);}; showToast('Opening PDF dialog...');}
+  else{const a=document.createElement('a');a.href=url;a.download=`Motacam_${data.reportNum||'report'}_${vreg}.html`;a.click();URL.revokeObjectURL(url);showToast('Downloaded — open and print to PDF');}
+}
+</script>
+</body>
+</html>
